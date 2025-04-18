@@ -32,6 +32,8 @@
 
 ## 安装
 
+### 方式一：直接安装
+
 1. 克隆项目
 ```bash
 git clone https://github.com/darrenyao/dingtalk-agent-client.git
@@ -47,6 +49,37 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 # 编辑 .env 文件，填入你的钉钉应用配置
+```
+
+### 方式二：Docker 部署
+
+1. 克隆项目
+```bash
+git clone https://github.com/darrenyao/dingtalk-agent-client.git
+cd dingtalk-agent-client
+```
+
+2. 配置环境变量
+```bash
+cp .env.example .env
+# 编辑 .env 文件，填入你的钉钉应用配置
+```
+
+3. 构建并启动容器
+```bash
+# 构建镜像
+docker-compose build
+
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+```
+
+4. 停止服务
+```bash
+docker-compose down
 ```
 
 ## 配置说明
