@@ -1,6 +1,6 @@
 # DingTalk Agent Client
 
-钉钉开放平台 API 客户端，支持用户认证、消息发送、用户查询等功能。
+把钉钉客户端作为 MCP Host 客户端，与创建的企业AI 助理对话，实现 MCP Server 调用
 
 ## 产品使用示例
 
@@ -34,7 +34,7 @@
 
 1. 克隆项目
 ```bash
-git clone https://github.com/yourusername/dingtalk-agent-client.git
+git clone https://github.com/darrenyao/dingtalk-agent-client.git
 cd dingtalk-agent-client
 ```
 
