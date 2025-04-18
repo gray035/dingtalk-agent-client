@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: dingtalk-agent-client
     restart: unless-stopped
     ports:
@@ -14,6 +16,11 @@ services:
       - .env
     environment:
       - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - dingtalk-network
 
