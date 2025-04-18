@@ -117,6 +117,10 @@ result = get_user_info("user123")
 result = send_message("张三", "Hello, World!")
 ```
 
+## 产品使用示例
+
+![产品使用示例](static/resource/iShot_2025-04-18_21.30.37.png)
+
 ## API 文档
 
 ### DingtalkAuth 类
@@ -157,6 +161,9 @@ dingtalk-agent-client/
 │   │   └── mcp_server.py
 │   └── config/
 │       └── settings.py
+├── static/
+│   └── resource/
+│       └── iShot_2025-04-18_21.30.37.png
 ├── tests/
 ├── requirements.txt
 └── README.md
@@ -181,8 +188,7 @@ dingtalk-agent-client/
 
 ## 联系方式
 
-- 项目维护者：[Your Name]
-- 邮箱：[your.email@example.com]
-- 项目链接：[https://github.com/yourusername/dingtalk-agent-client]
+- 项目维护者：[DarrenYao]
+- 邮箱：[yao428650@gmail.com]
 
 
