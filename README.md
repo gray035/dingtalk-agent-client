@@ -2,6 +2,10 @@
 
 钉钉开放平台 API 客户端，支持用户认证、消息发送、用户查询等功能。
 
+## 产品使用示例
+
+![产品使用示例](static/resource/iShot_2025-04-18_21.30.37.png)
+
 ## 功能特性
 
 - 用户认证
@@ -116,10 +120,6 @@ result = get_user_info("user123")
 # 发送消息
 result = send_message("张三", "Hello, World!")
 ```
-
-## 产品使用示例
-
-![产品使用示例](static/resource/iShot_2025-04-18_21.30.37.png)
 
 ## API 文档
 
