@@ -51,16 +51,30 @@ cp .env.example .env
 
 ## 配置说明
 
+### 钉钉 AI 助理初始化（使用 AI 助理对话作为交互界面）
+1. 创建 AI 助理并开通直通模式，文档参考：[AI 助理直通模式 & 技能开发](https://opensource.dingtalk.com/developerpedia/docs/explore/tutorials/assistant_ability/passthrough_mode/overview)
+
+2. 开启 [StreamMode](https://opensource.dingtalk.com/developerpedia/docs/learn/stream/overview)
+
+### [钉钉开放平台](https://open.dingtalk.com/document/orgapp/overview-of-development-process)应用创建（调用mcp server 中注册的钉钉开放接口)
+
+* 创建企业自建应用获取授权的 ClientId, ClientSecret
+
 在 `.env` 文件中配置以下信息：
 
 ```env
 # 钉钉应用配置
+# ai助理对应的 ak sk
 DINGTALK_APP_KEY=your_app_key
 DINGTALK_APP_SECRET=your_app_secret
+
+# 开放平台应用接口调用使用的 CLIENT_ID，CLIENT_SECRET
+DINGTALK_CORP_ID="YOUR_CORP_ID"
+DINGTALK_CLIENT_ID="YOUR_CLIENT_ID"
+DINGTALK_CLIENT_SECRET="YOUR_CLIENT_SECRET"
 DINGTALK_BASE_URL=https://oapi.dingtalk.com/
 
-# 数据库配置
-DATABASE_URL=sqlite:///./app.db
+
 
 # 日志配置
 LOG_LEVEL=INFO
