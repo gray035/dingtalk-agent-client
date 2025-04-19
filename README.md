@@ -4,7 +4,7 @@
 
 ## 产品使用示例
 
-![产品使用示例](static/resource/iShot_2025-04-18_21.30.37.png)
+![产品使用示例](static/resource/demo.png)
 
 ## 功能特性
 
@@ -14,13 +14,13 @@
   - 支持企业应用访问令牌管理
 
 - 用户管理
-  - 用户搜索（支持精确匹配和模糊匹配）
-  - 获取用户详细信息
-  - 获取当前用户信息
+  - 支持用户搜索（精确/模糊匹配）
+  - 支持获取用户详细信息
+  - 支持获取当前用户信息
 
-- 消息发送
-  - 支持文本消息
-  - 支持 Markdown 消息
+- 消息能力
+  - 支持文本消息发送
+  - 支持 Markdown 消息发送
   - 支持 @ 用户和 @ 所有人
 
 - MCP 工具集成
@@ -106,8 +106,6 @@ DINGTALK_CORP_ID="YOUR_CORP_ID"
 DINGTALK_CLIENT_ID="YOUR_CLIENT_ID"
 DINGTALK_CLIENT_SECRET="YOUR_CLIENT_SECRET"
 DINGTALK_BASE_URL=https://oapi.dingtalk.com/
-
-
 
 # 日志配置
 LOG_LEVEL=INFO
@@ -217,6 +215,7 @@ dingtalk-agent-client/
 ```
 
 2. 添加新功能
+- 在 `app/core/mcp_server.py` 中注册新的 MCP 工具
 - 在 `app/api/client/open/openapi_client.py` 中添加新的 API 方法
 - 在 `app/core/mcp_server.py` 中注册新的 MCP 工具
 - 添加相应的单元测试
