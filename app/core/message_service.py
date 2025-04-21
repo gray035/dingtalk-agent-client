@@ -24,28 +24,18 @@ class MessageService:
     async def process_stream_message(self, user_name, user_id, content, is_group_chat, group_name, chat_id):
         """Process a message from the DingTalk stream"""
         try:
-            message_source = f"群聊 {group_name}" if is_group_chat else "私聊"
-            logger.info(f"收到{message_source}消息 - 用户: {user_name}, 内容: {content}")
-
             # Skip if content is empty
             if not content or not content.strip():
-                logger.warning("收到空消息，跳过处理")
+                logger.warning("无内容，跳过处理")
                 return None
-
-            # Check for function call trigger
-            if content.strip().startswith(settings.FUNCTION_TRIGGER_FLAG):
-                return await self._handle_function_call(user_name, content, chat_id, is_group_chat)
-
-            return None
-
+            return await self._handle_function_call(user_name, content, chat_id, is_group_chat)
         except Exception as e:
-            logger.error(f"处理消息时出错: {str(e)}")
-            return f"处理消息时出错: {str(e)}"
+            logger.error(f"处理出错: {str(e)}")
+            return f"处理出错: {str(e)}"
 
     async def _handle_function_call(self, user_name, content, chat_id, is_group_chat):
         """Handle function call triggered by message"""
         try:
-            logger.info(f"触发flag函数调用 - 用户: {user_name}, 内容: {content}")
             query = content.strip()[len(settings.FUNCTION_TRIGGER_FLAG):].strip()
             if not self.llm_service.is_available():
                 error_msg = "未在配置中设置 OPENAI_API_KEY"

@@ -1,0 +1,86 @@
+openapi: 3.0.1
+info:
+  title: mcp-client
+  description: 根据用户输入实现不同的能力执行
+  version: v1.0.0
+x-dingtalk-protocol: stream
+paths:
+  /v1/actions/example/mcp:
+    post:
+      description: 执行用户特定意图
+      summary: mcp 调用
+      operationId:  mcpClientExecut
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/McpRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpResponse'
+components:
+  schemas:
+    McpRequest:
+      type: object
+      properties:
+        input:
+          type: string
+          description: 用户输入
+          x-dingtalk-context: 
+            property: currentInput
+            format: raw
+        sender_id:
+          type: string
+          description: 用户ID
+          x-dingtalk-context: 
+            property: currentUser
+            format: userId
+        sender_nick:
+          type: string
+          description: 用户输入
+          x-dingtalk-context: 
+            property: currentUser
+            format: nickName
+        conversation_id:
+          type: string
+          description: 会话ID
+          x-dingtalk-context: 
+            property: currentConversation
+            format: openConversationId
+        conversation_type:
+          type: string
+          description: 会话类型
+          x-dingtalk-context: 
+            property: currentConversation
+            format: type
+        conversation_title:
+          type: string
+          description: 会话名
+          x-dingtalk-context: 
+            property: currentConversation
+            format: name
+    McpResponse:
+      type: object
+      properties:
+        location:
+          type: string
+          description: 查询天气结果对应的城市和地区
+        day:
+          type: string
+          description: 查询天气结果对应的日期
+        text:
+          type: string
+          description: 天气现象，晴天、多云等
+        temperature:
+          type: number
+          description: 气温，单位：摄氏度
+        humidity:
+          type: number
+          description: 湿度
+        wind_direction:
+          type: string
+          description: 风向
