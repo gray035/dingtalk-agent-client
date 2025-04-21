@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+      "filesystem": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/Users/yixuan.yhl/Desktop",
+          "/Users/yixuan.yhl/Downloads"
+        ]
+      },
+      "sequential-thinking": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-sequential-thinking"
+        ]
+      }
+    }
+  }
