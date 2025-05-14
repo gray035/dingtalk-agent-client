@@ -13,16 +13,8 @@ class Settings:
     DINGTALK_APP_SECRET = os.getenv("DINGTALK_APP_SECRET", "")
     DINGTALK_STREAM_TOPIC = os.getenv("DINGTALK_STREAM_TOPIC", "/v1.0/graph/api/invoke")
 
-    # For REST API (HTTP)
-    DINGTALK_BASE_URL = "https://api.dingtalk.com/"
-    DINGTALK_CORP_ID = os.getenv("DINGTALK_CORP_ID", "")
-    DINGTALK_CLIENT_ID = os.getenv("DINGTALK_CLIENT_ID", "")
-    DINGTALK_CLIENT_SECRET = os.getenv("DINGTALK_CLIENT_SECRET", "")
-    DINGTALK_WEBHOOK_TOKEN = os.getenv("DINGTALK_WEBHOOK_TOKEN", "")
-
-    # Function trigger and bot settings
-    FUNCTION_TRIGGER_FLAG = os.getenv("FUNCTION_TRIGGER_FLAG", "/run")
-
+    # CARD TEMPLATE ID
+    DINGTALK_CARD_TEMPLATE_ID = os.getenv("DINGTALK_CARD_TEMPLATE_ID", "")
 
     # LLM API configuration
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

@@ -5,3 +5,6 @@ alibabacloud-dingtalk>=2.0.0
 mcp-server>=0.1.0
 sqlalchemy>=2.0.0
 pydantic>=2.0.0
+
+# OpenAI Agents
+openai-agents>=0.0.14

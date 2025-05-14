@@ -1,98 +1,74 @@
-# app/core/message_service.py
-"""
-Service for processing DingTalk messages
-"""
-import json
-import os
-
+from typing import Dict, Any, List
 from loguru import logger
-from datetime import datetime
-from app.config.settings import settings
-from app.core.llm_service import LLMService
-from fastmcp import Client
-from fastmcp.client.transports import PythonStdioTransport
+import asyncio
+
+from .message_context import MessageContext
+from app.api.dingtalk.reply_service import reply_service
+from app.agent.agent_manager import AgentManager
+
 
 class MessageService:
-    """Service for processing messages"""
+    def __init__(self):
+        self.agent_manager = None
+        self.reply_service = None
+        self._init_lock = asyncio.Lock()
 
-    def __init__(self, dingtalk_client):
-        self.dingtalk_client = dingtalk_client
-        self.llm_service = LLMService()
-        self.mcp_transport = PythonStdioTransport("app/core/mcp_server.py", env={"PATHEXT": os.environ.get("PATHEXT", "")})
-        self.system_message = {"role": "system", "content": "你是一个很有帮助的助手。当用户提问需要调用工具时，请使用 tools 中定义的函数。"}
 
-    async def process_stream_message(self, user_name, user_id, content, is_group_chat, group_name, chat_id):
-        """Process a message from the DingTalk stream"""
+    async def process_stream_message(self, context: MessageContext) -> str:
+        """
+        Process a stream message using the agent.
+        
+        Args:
+            context: Message context containing all necessary information
+        
+        Returns:
+            Dict containing the processed message response
+        """
         try:
-            # Skip if content is empty
-            if not content or not content.strip():
-                logger.warning("无内容，跳过处理")
-                return None
-            return await self._handle_function_call(user_name, content, chat_id, is_group_chat)
-        except Exception as e:
-            logger.error(f"处理出错: {str(e)}")
-            return f"处理出错: {str(e)}"
+            if not context.content:
+                return {
+                    "status": "error",
+                    "message": "Empty message content"
+                }
 
-    async def _handle_function_call(self, user_name, content, chat_id, is_group_chat):
-        """Handle function call triggered by message"""
-        try:
-            query = content.strip()[len(settings.FUNCTION_TRIGGER_FLAG):].strip()
-            if not self.llm_service.is_available():
-                error_msg = "未在配置中设置 OPENAI_API_KEY"
-                logger.error(error_msg)
-                return error_msg
+            # Log message processing
+            logger.info(f"Processing message from {context.user_name} ({context.user_id}) in {'group' if context.is_group_chat else 'private'} chat")
+            if context.is_group_chat and context.group_name:
+                logger.info(f"Group: {context.group_name}")
 
-            async with Client(self.mcp_transport) as mcp_client:
-                tools = []
-                for tool in await mcp_client.list_tools():
-                    info = tool.model_dump() if hasattr(tool, "model_dump") else tool.dict()
-                    tools.append({
-                        "type": "function",
-                        "function": {
-                            "name": info["name"],
-                            "description": info.get("description", ""),
-                            "parameters": info.get("parameters", {})
-                        }
-                    })
-                messages = [
-                    self.system_message,
-                    {"role": "user", "content": query}
-                ]
-                resp = self.llm_service.chat_completion(messages, tools)
-                msg = resp.choices[0].message
-                if msg.tool_calls:
-                    call = msg.tool_calls[0]
-                    fn_name = call.function.name
-                    args = json.loads(call.function.arguments)
-                    output = await mcp_client.call_tool(fn_name, args)
-                    logger.info(f"调用函数 {fn_name} -> {output}")
+            # 确保 agent_manager 已初始化
+            agent_manager = AgentManager(current_user_info=context.to_dict())
+            
+            # Process message with agent
+            response = await agent_manager.process_message(context)
 
-                    # 处理输出结果，确保可以被正确处理
-                    output_for_llm = output
-                    # 如果是 TextContent 类型，提取文本内容
-                    if hasattr(output, "text") and hasattr(output, "type"):
-                        output_for_llm = output.text
+            # Send reply if conversation token is available
+            # if context.conversation_token:
+            #     await reply_service.reply_text(context.conversation_token, response if response else "暂无回复")
 
-                    messages.append(msg)
-                    messages.append({
-                        "role": "tool",
-                        "content": output_for_llm if isinstance(output_for_llm, str) else str(output_for_llm),
-                        "tool_call_id": call.id
-                    })
-                    summary = self.llm_service.chat_completion(messages)
-                    response = summary.choices[0].message.content
-
-                    # 构建包含工具执行结果的响应
-                    tool_result = {
-                        "tool_name": fn_name,
-                        "tool_args": args,
-                        "tool_output": output,  # 保留原始输出，由 dingtalk_stream_client 处理序列化
-                        "summary": response
-                    }
-                    return tool_result
-                else:
-                    return msg.content
+            # Construct response
+            return response
 
         except Exception as e:
-            logger.error(f"处理flag函数调用时出错: {str(e)}")
-            return f"执行错误: {str(e)}"
+            logger.error(f"Error processing message: {str(e)}", exc_info=True)
+            error_message = f"Error processing message: {str(e)}"
+            
+            # Try to send error message if conversation token is available
+            if context.conversation_token:
+                await reply_service.reply_text(context.conversation_token, error_message)
+            
+            return {
+                "status": "error",
+                "message": error_message
+            }
+
+
+    async def cleanup(self):
+        """清理资源"""
+        if self.agent_manager:
+            await self.agent_manager.cleanup()
+            self.agent_manager = None
+
+
+# Create a singleton instance
+message_service = MessageService() 
