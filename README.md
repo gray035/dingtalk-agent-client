@@ -66,8 +66,8 @@
 ![client](static/resource/client-info.png)
 
 2. 开通基础接口的调用权限
-![api11](static/resource/api1.png)
-![api12](static/resource/api2.png)
+![api1](static/resource/api1.png)
+![api2](static/resource/api2.png)
 
 ## 运行应用
 
