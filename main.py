@@ -8,14 +8,9 @@ import asyncio
 import signal
 from loguru import logger
 
-from app.config.settings import settings
-from app.api.dingtalk.stream_client import DingTalkStreamManager
-from app.core.message_service import MessageService
-from agents import set_default_openai_client, set_default_openai_api, set_tracing_disabled
-from openai import AsyncOpenAI
+from app.dingtalk.stream_client import DingTalkStreamManager
 
-message_service = MessageService()
-stream_manager = DingTalkStreamManager(message_service)
+stream_manager = DingTalkStreamManager()
 
 shutdown_event = asyncio.Event()
 
@@ -46,7 +41,7 @@ def configure_logging():
 def start_stream_client():
     """启动钉钉流客户端"""
     try:
-        stream_manager.start(message_service)
+        stream_manager.start()
         logger.info("Stream 网关连接成功")
     except Exception as e:
         logger.error(f"钉钉流客户端启动失败: {str(e)}")
@@ -70,20 +65,6 @@ async def main():
     configure_logging()
     # 启动钉钉流客户端
     start_stream_client()
-
-    # 创建OpenAI agent自定义LLM客户端
-    base_url = settings.OPENAI_API_BASE_URL
-    api_key = settings.OPENAI_API_KEY
-    model_name = settings.OPENAI_API_MODEL
-    
-    if not base_url or not api_key or not model_name:
-        raise ValueError("Please set OPENAI_API_BASE_URL, OPENAI_API_KEY, and model name in config")
-    set_default_openai_client(client=AsyncOpenAI(
-        base_url=base_url,
-        api_key=api_key
-    ), use_for_tracing=False)
-    set_default_openai_api("chat_completions")
-    set_tracing_disabled(disabled=True)
 
     # Set up signal handlers
     loop = asyncio.get_running_loop()
