@@ -14,7 +14,7 @@ from app.agent.agent_manager import AgentManager
 
 
 class MessageCallbackHandler(GraphHandler):
-    def __init__(self, timeout: int = 30):
+    def __init__(self, timeout: int = 120):
         """
         Initialize the handler with a message processor
         
