@@ -54,7 +54,7 @@ class DingTalkChatbotHandler(GraphHandler):
         try:
             # Parse incoming message
             graph_request = GraphRequest.from_dict(callback.data)
-            logger.debug(f"Processing message synchronously... {graph_request.body}")
+            logger.info(f"Processing message synchronously... {graph_request.body}")
 
             # Extract message content and metadata
             text_content, message_metadata = self._parse_message_content(

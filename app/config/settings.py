@@ -14,7 +14,7 @@ class Settings:
     DINGTALK_STREAM_TOPIC = os.getenv("DINGTALK_STREAM_TOPIC", "/v1.0/graph/api/invoke")
 
     # CARD TEMPLATE ID
-    DINGTALK_CARD_TEMPLATE_ID = os.getenv("DINGTALK_CARD_TEMPLATE_ID", "")
+    DINGTALK_CARD_TEMPLATE_ID = os.getenv("DINGTALK_CARD_TEMPLATE_ID", "eb98c382-aace-4317-9ea2-19e01843411c.schema")
 
     # LLM API configuration
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
