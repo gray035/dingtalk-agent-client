@@ -1,7 +1,7 @@
 # 钉钉 Agent 客户端
 
 一个基于 OpenAI Agent SDK 开发钉钉 AI 助手的框架，集成了 MCP-server（内置Dingtalk 简版 mcp-server)。
-![产品使用示例](static/resource/demo.png)
+![产品使用示例](static/resource/demo2.png)
 
 ## 概述
 
