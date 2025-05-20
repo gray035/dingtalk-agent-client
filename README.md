@@ -31,9 +31,14 @@
 
 ## 前提条件
 
-- Python 3.8+
+- Python 3.10+
 - 钉钉开发者账号及相应权限
-- OpenAI API 密钥或兼容的 API 端点
+  - 获取AI 助理的 Client_ID, Client_Secret
+    ![client](static/resource/client-info.png)
+  - 开通基础接口的调用权限
+    ![api2](static/resource/api-member.png)
+    ![api1](static/resource/api1.png)
+- LLM调用的 api-key (默认使用百炼的qwen-max 服务， 可配置)
 
 ## 安装
 
@@ -60,14 +65,6 @@
    LLM_API_MODEL=qwen-max  # 或您首选的模型
    ```
 
-## 运行前准备
-
-1. 获取AI 助理的 Client_ID, Client_Secret
-![client](static/resource/client-info.png)
-
-2. 开通基础接口的调用权限
-![api2](static/resource/api-member.png)
-![api1](static/resource/api1.png)
 
 ## 运行应用
 
