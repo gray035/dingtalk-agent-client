@@ -12,7 +12,7 @@ from alibabacloud_dingtalk.ai_interaction_1_0 import models as dingtalk_models
 from alibabacloud_tea_util import models as util_models
 from loguru import logger
 
-from .dingtalk_auth import get_auth
+from app.dingtalk.dingtalk_auth import get_auth
 
 
 class ContentType(Enum):

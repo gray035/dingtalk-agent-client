@@ -10,16 +10,14 @@ This module provides a robust implementation of DingTalk's streaming API client 
 
 import threading
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from dataclasses import dataclass
 
 from dingtalk_stream import DingTalkStreamClient, Credential
 from loguru import logger
 
-from app.core.message_service import MessageService
 from app.config.settings import settings
-from .callback_handler import DingTalkChatbotHandler
-
+from .callback_handler import MessageCallbackHandler
 
 @dataclass
 class ConnectionStats:
@@ -30,21 +28,17 @@ class ConnectionStats:
     last_connection_time: float = 0
     uptime: float = 0
     last_message_time: float = 0
-    messages_processed: int = 0
 
 
 class DingTalkStreamManager:
     """Enhanced DingTalk Stream Client Manager with health monitoring capabilities"""
 
-    def __init__(self, message_service: Optional[MessageService] = None):
+    def __init__(self):
         """
         Initialize the stream manager with improved configuration
         
-        Args:
-            message_service: Optional message service for processing messages
         """
         self.stream_client = None
-        self.message_service = message_service
         self.stop_event = threading.Event()
         self.reconnect_interval = 5  # Initial reconnect interval (seconds)
         self.max_reconnect_interval = 60  # Maximum reconnect interval (seconds)
@@ -60,18 +54,10 @@ class DingTalkStreamManager:
         # Connection statistics
         self.stats = ConnectionStats()
 
-    def start(self, message_service: Optional[MessageService] = None) -> None:
+    def start(self) -> None:
         """
         启动钉钉流客户端，包含重连逻辑和健康监控
-
-        Args:
-            message_service: 用于处理消息的消息服务
         """
-        if message_service:
-            self.message_service = message_service
-
-        if not self.message_service:
-            raise ValueError("需要提供消息服务")
 
         try:
             self._initialize_client()
@@ -83,12 +69,12 @@ class DingTalkStreamManager:
 
     def _initialize_client(self) -> None:
         """初始化钉钉流客户端"""
-        self.handler = DingTalkChatbotHandler(self.message_service)
+        self.handler = MessageCallbackHandler()
         stream_topic = settings.DINGTALK_STREAM_TOPIC
         
         credential = Credential(
-            settings.DINGTALK_APP_KEY,
-            settings.DINGTALK_APP_SECRET
+            settings.DINGTALK_CLIENT_ID,
+            settings.DINGTALK_CLIENT_SECRET
         )
 
         self.stream_client = DingTalkStreamClient(credential)

@@ -9,16 +9,16 @@ class LLMService:
     """Service for handling LLM API calls"""
     
     def __init__(self):
-        api_key = settings.OPENAI_API_KEY
+        api_key = settings.LLM_API_KEY
         self.api_key = api_key
         if api_key:
             self.openai_client = OpenAI(
                 api_key=api_key,
-                base_url=settings.OPENAI_API_BASE_URL,
+                base_url=settings.LLM_API_BASE_URL,
             )
         else:
             self.openai_client = None
-            logger.warning("未在配置中设置 OPENAI_API_KEY")
+            logger.warning("未在配置中设置 LLM_API_KEY")
 
     def chat_completion(self, messages, tools=None, model=None):
         """
@@ -33,8 +33,8 @@ class LLMService:
             OpenAI API的响应对象
         """
         if not self.openai_client:
-            raise ValueError("OpenAI client is not initialized")
-        model = model or settings.OPENAI_API_MODEL
+            raise ValueError("LLM client is not initialized")
+        model = model or settings.LLM_API_MODEL
         if tools:
             return self.openai_client.chat.completions.create(
                 model=model,
