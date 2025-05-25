@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional, List, TypedDict
 from typing_extensions import NotRequired
 from loguru import logger
 from app.agent.employee_agent import create_employee_info_agent
+from app.agent.doc2bot_agent import create_doc2bot_agent
 from openai import AsyncOpenAI
 
 from agents import (
@@ -70,7 +71,7 @@ class AgentManager:
         try:
             logger.info(f"收到消息: {context.content}")
             # agent 执行逻辑
-            self.agent = await create_employee_info_agent()
+            self.agent = await create_doc2bot_agent()
 
             result = await Runner.run(self.agent, context.content, context=context)
             
