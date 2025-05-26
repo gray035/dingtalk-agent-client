@@ -58,7 +58,7 @@ async def dynamic_instructions(context: RunContextWrapper[MessageContext], agent
 """
 
     # 组合完整的动态指令
-    final_instruction = f"{user_info}\n{core_instruction}\n{workflow_examples}\n\n请根据用户输入，提取所需的用户信息和团队数据，为后续处理提供基础支持。输出必须是一个包含用户信息的列表。"
+    final_instruction = f"{core_instruction}\n{workflow_examples}\n\n如果用户不知道如何获取traceId可以告诉用户去问答的卡片上点击任意一篇引用来源在浏览器打开，url上面有traceId参数，复制出来即可。agentCode去助理编辑页的集成开发tab下复制Assistant ID即可"
     return final_instruction
 
 # MCP服务器创建函数
