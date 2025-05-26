@@ -7,6 +7,7 @@ from loguru import logger
 from app.agent.employee_agent import create_employee_info_agent
 from app.agent.doc2bot_agent import create_doc2bot_agent
 from openai import AsyncOpenAI
+from app.drag.drag_service import *
 
 from agents import (
     
