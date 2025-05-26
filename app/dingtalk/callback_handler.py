@@ -13,6 +13,12 @@ from app.utils.stop_watch import Stopwatch
 from app.service.message_context import MessageContext
 from app.agent.agent_manager import AgentManager
 
+#if len(text_content) == 30:
+#    return self._create_response(call_qa_trace(text_content))
+
+#if len(text_content) == 32:
+#    return self._create_response(call_agent_code(text_content))
+
 
 class MessageCallbackHandler(GraphHandler):
     def __init__(self, timeout: int = 120):
@@ -59,12 +65,6 @@ class MessageCallbackHandler(GraphHandler):
             # Update stats
             self.stats["messages_received"] += 1
             self.stats["last_message_time"] = time.time()
-
-            if len(text_content) == 30:
-                return self._create_response(call_qa_trace(text_content))
-
-            if len(text_content) == 32:
-                return self._create_response(call_agent_code(text_content))
 
             # 使用锁防止并发处理
             async with self.processing_lock:
