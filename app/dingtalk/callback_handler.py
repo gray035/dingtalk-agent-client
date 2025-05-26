@@ -195,7 +195,7 @@ class MessageCallbackHandler(GraphHandler):
         """创建文本内容的响应"""
         if hasattr(result, "text") and hasattr(result, "type"):
             return {"text": result.text}
-        return {"text": self._make_json_serializable(result)}
+        return {"content": self._make_json_serializable(result)}
 
     def _create_empty_response(self) -> Tuple[int, Dict]:
         """创建空消息的响应"""
