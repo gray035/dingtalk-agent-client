@@ -1,3 +1,5 @@
+import os.path
+
 from agents import Agent
 from app.config.settings import settings
 from agents.mcp import MCPServerStdio
@@ -63,11 +65,12 @@ async def dynamic_instructions(context: RunContextWrapper[MessageContext], agent
 
 # MCP服务器创建函数
 async def create_doc2bot_info_mcp():
+    script_path = os.path.dirname(os.path.abspath(__file__)) + "/server/doc2bot_mcp_server.py"
     mcp_server = MCPServerStdio(
         name="qa_debug_mcp",
         params={
-            "command": "python",
-            "args": ["/Users/yangshenneng/PycharmProjects/dingtalk-agent-client/app/agent/server/doc2bot_mcp_server.py"]
+            "command": "python3.12",
+            "args": [script_path]
         },
         client_session_timeout_seconds = 600.0
     )
