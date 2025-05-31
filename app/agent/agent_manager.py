@@ -8,6 +8,10 @@ from app.agent.employee_agent import create_employee_info_agent
 from app.agent.doc2bot_agent import create_doc2bot_agent
 from openai import AsyncOpenAI
 from app.drag.drag_service import *
+from app.service.message_context import AgentRunningContext
+from app.core.stream_card import StreamCard
+from openai.types.responses import ResponseTextDeltaEvent
+from app.core.agent import HandleResult
 
 from agents import (
     
@@ -67,18 +71,28 @@ class AgentManager:
             raise
 
 
-    async def process_message(self, context: MessageContext) -> str:
+    async def process_message(self, context: MessageContext) -> HandleResult:
         """处理消息"""
         try:
             logger.info(f"收到消息: {context.content}")
             # agent 执行逻辑
             self.agent = await create_doc2bot_agent()
+            # 1. 新建流式卡片，卡片会显示在AI助理的聊天窗口中
+            stream_card = await StreamCard.create(context.conversation_token)
 
-            result = await Runner.run(self.agent, context.content, context=context)
-            
-            logger.info(f"\n\nFinal response:\n{result.final_output}")
+            agent_running_context = AgentRunningContext(context=context, stream_card=stream_card)
+            result = Runner.run_streamed(self.agent, context=agent_running_context, input=context.content)
+            async for event in result.stream_events():
+                if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                    logger.info("event delta: {}".format(event.data.delta))
+                    # 增量更新卡片内容
+                    await stream_card.update_delta(event.data.delta)
 
-            return result
+            # 结束卡片更新，停止等待动画
+            await stream_card.finish()
+
+            # 返回成功，AI助理平台根据直通模式的配置，会忽略这个返回值
+            return HandleResult(200, "OK", "OK")
         except Exception as e:
             logger.error(f"处理消息失败: {str(e)}", exc_info=True)
-            return f"处理消息时出错: {str(e)}"
+            return HandleResult(500, "Internal Server Error", str(e))

@@ -7,7 +7,10 @@ from dingtalk_stream import GraphRequest, CallbackMessage, AckMessage
 from dingtalk_stream.frames import Headers
 from dingtalk_stream.graph import GraphHandler, GraphResponse
 from loguru import logger
+
+from app.config.settings import settings
 from app.drag.drag_service import *
+from app.service.reply_service import reply_service
 
 from app.utils.stop_watch import Stopwatch
 from app.service.message_context import MessageContext
@@ -30,6 +33,7 @@ class MessageCallbackHandler(GraphHandler):
         """
         super().__init__()
         self.timeout = timeout
+        self.reply_service = reply_service
         self.processing_lock = asyncio.Lock()  # ✅ 添加并发控制
         
         self.stats = {
@@ -66,25 +70,25 @@ class MessageCallbackHandler(GraphHandler):
             self.stats["messages_received"] += 1
             self.stats["last_message_time"] = time.time()
 
+            # Construct MessageContext
+            context = MessageContext(
+                content=text_content,
+                user_name=message_metadata["sender_nick"],
+                user_id=message_metadata["sender_id"],
+                sender_union_id=message_metadata["sender_union_id"],
+                is_group_chat=message_metadata["conversation_type"] != "1",
+                group_name=message_metadata["group_name"],
+                conversation_id=message_metadata["conversation_id"],
+                timestamp=int(time.time()),
+                conversation_token=message_metadata["conversation_token"]
+            )
+
             # 使用锁防止并发处理
             async with self.processing_lock:
                 try:
                     # Create stop watch for timing
                     stop_watch = Stopwatch()
                     stop_watch.start()
-
-                    # Construct MessageContext
-                    context = MessageContext(
-                        content=text_content,
-                        user_name=message_metadata["sender_nick"],
-                        user_id=message_metadata["sender_id"],
-                        sender_union_id=message_metadata["sender_union_id"],
-                        is_group_chat=message_metadata["conversation_type"] != "1",
-                        group_name=message_metadata["group_name"],
-                        conversation_id=message_metadata["conversation_id"],
-                        timestamp=int(time.time()),
-                        conversation_token=message_metadata["conversation_token"]
-                    )
 
                     # 处理消息，添加超时控制
                     result = await asyncio.wait_for(
@@ -212,15 +216,46 @@ class MessageCallbackHandler(GraphHandler):
         return AckMessage.STATUS_SYSTEM_EXCEPTION, response.to_dict()
 
     def _parse_message_content(self, body: Any) -> Tuple[str, Dict[str, Any]]:
-        """Parse message content and extract metadata"""
+        """
+        Data format example:
+        {
+            "msgType": "{\"msgType\":\"text\"}",
+            "scenarioContext": "{\"uid\":21051,\"feature\":{\"senderPlatform\":\"Mac\",\"mcid\":\"21051:5635787090\",\"botUid\":5635787090,
+                                \"agentCode\":\"34ab13b30a18420491eef8aa3f40b649\",\"conversationId\":\"21051:5635787090\",\"channel\":\"copilot\",
+                                \"agentIcon\":\"$iwElAqNwbmcDBgTRBAAF0QQABrBDaOmNr1veKAeOUPdE23sAB9IhoDt7CAAJqm9wZW4udG9vbHMKAAvSABPaDw\",
+                                \"senderPlatformAppVersion\":\"7.6.60\",\"mid\":22775824980658,\"agentName\":\"小野-你的健康秘书\",
+                                \"copilotOpenCid\":\"cidxENB9F1tbhCvyDECZWDhaPML5zzQGOkDHSQfIeaPP4g=\",\"sessionExtension\":{},\"skillId\":\"baymax-89db1b55-a33a-40e3-9c9f-b73f3703db58\",
+                                \"bizContext\":{},\"trackingParams\":{},\"requestId\":\"c145ed53-d462-44ea-b4b6-5e6cfd9354ec\",\"appId\":\"3867735874\",
+                                \"copilotContext\":\"{\\\"sessionId\\\":\\\"V2_AI_AGENT_JNOjRuEatSYpsKZMdhN6rrBXpk2B35TlKtQeW7bTnDQX\\\"}\",\"sendAppVersion\":\"7.6.60\",
+                                \"requestToken\":\"reqToken_14c517aa1357434985723f40f2b28f3e\",\"robotCode\":\"34ab13b30a18420491eef8aa3f40b649\",
+                                \"unifiedAppId\":\"2156a4d7-8e38-4038-b81d-f9ab81b6121b\",\"tenantAssistantId\":\"34ab13b30a18420491eef8aa3f40b649\",
+                                \"cid\":\"21051:50541009\"},\"scenarioContent\":{},\"channel\":\"copilot\",\"scenarioInstanceId\":\"21051:50541009\",
+                                \"scenarioCode\":\"com.dingtalk.scenario.im\",\"chatTargetUid\":50541009,\"orgId\":439446171,
+                                \"userInteractionContext\":{\"dataForAgent\":{\"inputOption\":{},
+                                \"structuredPrompt\":{\"detail\":[{\"dingResource\":[{\"text\":\"hello\",\"type\":\"TEXT\"}],\"type\":\"TEXT\"}]}}}}",
+            "history": [null],
+            "scenarioInstanceId": "21051:50541009",
+            "sender_id": "024362",
+            "input": "hello",
+            "uid": 21051,
+            "conversation_type": "copilot",
+            "sender_nick": "zhangdaping",
+            "conversation_title": "",
+            "conversation_id": "cideIOj2BDeZj3zsswPCZWIuA==",
+            "conversationToken": "ct_01jvpxh0d1fp2946b1q43w003d",
+            "sender_union_id": "URvHTFqSf6IiE"
+        }
+        """
         try:
             # Parse body if it's a string
             if isinstance(body, str):
                 body = json.loads(body)
 
+            msg_type = json.loads(body.get("msgType")).get("msgType")
+
             # Extract text content
             text_content = body.get("input", "").strip()
-            
+
             # Extract org_id from multiple possible locations
             org_id = body.get("orgId") or body.get("org_id")
             request_id = None
@@ -239,6 +274,7 @@ class MessageCallbackHandler(GraphHandler):
 
             # Extract metadata
             metadata = {
+                "msg_type": msg_type,
                 "sender_id": body.get("sender_id", ""),
                 "sender_nick": body.get("sender_nick", "Unknown User"),
                 "conversation_id": body.get("conversation_id", ""),

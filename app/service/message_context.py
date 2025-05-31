@@ -3,6 +3,7 @@ Message context data structures
 """
 from typing import Optional
 from dataclasses import dataclass
+from app.core.stream_card import StreamCard
 
 @dataclass
 class MessageContext:
@@ -50,3 +51,8 @@ class MessageContext:
         if self.conversation_token:
             data["conversation_token"] = self.conversation_token
         return data
+
+class AgentRunningContext:
+    def __init__(self, context: MessageContext, stream_card: StreamCard):
+        self.context = context
+        self.stream_card = stream_card

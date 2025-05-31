@@ -142,15 +142,65 @@ class DingTalkChatbotHandler(GraphHandler):
             logger.info("Finished processing message")
 
     def _parse_message_content(self, body: Any) -> Tuple[str, Dict[str, Any]]:
-        """Parse message content and extract metadata"""
+        """
+        Data format example:
+        {
+            "msgType": "{\"msgType\":\"text\"}",
+            "scenarioContext": "{\"uid\":21051,\"feature\":{\"senderPlatform\":\"Mac\",\"mcid\":\"21051:5635787090\",\"botUid\":5635787090,
+                                \"agentCode\":\"34ab13b30a18420491eef8aa3f40b649\",\"conversationId\":\"21051:5635787090\",\"channel\":\"copilot\",
+                                \"agentIcon\":\"$iwElAqNwbmcDBgTRBAAF0QQABrBDaOmNr1veKAeOUPdE23sAB9IhoDt7CAAJqm9wZW4udG9vbHMKAAvSABPaDw\",
+                                \"senderPlatformAppVersion\":\"7.6.60\",\"mid\":22775824980658,\"agentName\":\"小野-你的健康秘书\",
+                                \"copilotOpenCid\":\"cidxENB9F1tbhCvyDECZWDhaPML5zzQGOkDHSQfIeaPP4g=\",\"sessionExtension\":{},\"skillId\":\"baymax-89db1b55-a33a-40e3-9c9f-b73f3703db58\",
+                                \"bizContext\":{},\"trackingParams\":{},\"requestId\":\"c145ed53-d462-44ea-b4b6-5e6cfd9354ec\",\"appId\":\"3867735874\",
+                                \"copilotContext\":\"{\\\"sessionId\\\":\\\"V2_AI_AGENT_JNOjRuEatSYpsKZMdhN6rrBXpk2B35TlKtQeW7bTnDQX\\\"}\",\"sendAppVersion\":\"7.6.60\",
+                                \"requestToken\":\"reqToken_14c517aa1357434985723f40f2b28f3e\",\"robotCode\":\"34ab13b30a18420491eef8aa3f40b649\",
+                                \"unifiedAppId\":\"2156a4d7-8e38-4038-b81d-f9ab81b6121b\",\"tenantAssistantId\":\"34ab13b30a18420491eef8aa3f40b649\",
+                                \"cid\":\"21051:50541009\"},\"scenarioContent\":{},\"channel\":\"copilot\",\"scenarioInstanceId\":\"21051:50541009\",
+                                \"scenarioCode\":\"com.dingtalk.scenario.im\",\"chatTargetUid\":50541009,\"orgId\":439446171,
+                                \"userInteractionContext\":{\"dataForAgent\":{\"inputOption\":{},
+                                \"structuredPrompt\":{\"detail\":[{\"dingResource\":[{\"text\":\"hello\",\"type\":\"TEXT\"}],\"type\":\"TEXT\"}]}}}}",
+            "history": [null],
+            "scenarioInstanceId": "21051:50541009",
+            "sender_id": "024362",
+            "input": "hello",
+            "uid": 21051,
+            "conversation_type": "copilot",
+            "sender_nick": "zhangdaping",
+            "conversation_title": "",
+            "conversation_id": "cideIOj2BDeZj3zsswPCZWIuA==",
+            "conversationToken": "ct_01jvpxh0d1fp2946b1q43w003d",
+            "sender_union_id": "URvHTFqSf6IiE"
+        }
+        """
         try:
             # Parse body if it's a string
             if isinstance(body, str):
                 body = json.loads(body)
 
-            # Extract text content directly from input field
-            text_content = body.get("input", "")
+            msg_type = json.loads(body.get("msgType")).get("msgType")
+
+            # Extract text content
+            text_content = body.get("input", "").strip()
+
+            # Extract org_id from multiple possible locations
+            org_id = body.get("orgId") or body.get("org_id")
+            request_id = None
+            if not org_id:
+                scenario_ctx = body.get("scenarioContext")
+                if scenario_ctx:
+                    try:
+                        if isinstance(scenario_ctx, str):
+                            scenario_ctx_obj = json.loads(scenario_ctx)
+                        else:
+                            scenario_ctx_obj = scenario_ctx
+                        org_id = scenario_ctx_obj.get("orgId")
+                        request_id = scenario_ctx_obj.get("requestId")
+                    except Exception as e:
+                        logger.warning(f"Failed to parse scenarioContext for orgId: {e}")
+
+            # Extract metadata
             metadata = {
+                "msg_type": msg_type,
                 "sender_id": body.get("sender_id", ""),
                 "sender_nick": body.get("sender_nick", "Unknown User"),
                 "conversation_id": body.get("conversation_id", ""),
@@ -158,6 +208,7 @@ class DingTalkChatbotHandler(GraphHandler):
                 "group_name": body.get("conversation_title", ""),
                 "conversation_token": body.get("conversationToken", ""),
                 "sender_union_id": body.get("sender_union_id", ""),
+                "request_id": request_id
             }
 
             return text_content, metadata
