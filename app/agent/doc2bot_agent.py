@@ -69,7 +69,7 @@ async def create_doc2bot_info_mcp():
     mcp_server = MCPServerStdio(
         name="qa_debug_mcp",
         params={
-            "command": "python3.12",
+            "command": "python",
             "args": [script_path]
         },
         client_session_timeout_seconds = 600.0
